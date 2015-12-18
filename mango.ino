@@ -1,9 +1,8 @@
-
 //  This is the arduno code for operating the lights for a Mango Velomobile,  it should be adaptable to any other velomobile or bicycle.
 //  I am using an Arduino DUE for the current processor, mainly because I wanted a lot of pins to experiment with over time, and the
 //  energy draw just isn't all that much compared to the draw from the LEDs themselves
 //
-//  This code is First Copyright2015 Doug Davis dougd@dldavis.com  under the terms of the GPL V3 licnese as cited below
+//  This code is Copyright  2015 Doug Davis of Murphy Texas dougd@dldavis.com  under the terms of the GPL V3 licnese as cited below
 //
 
 /*   This program is free software: you can redistribute it and/or modify
@@ -126,7 +125,7 @@ void setup() {
 #define P_OFF     0x000000
 
 
-#define READ_LIMIT  25 // threashold of a pin going high to trigger an event
+#define READ_LIMIT  32 // threashold of a pin going high to trigger an event
 
 #define LEFT_PIN  1
 #define STOP_PIN  2
@@ -152,15 +151,15 @@ void setup() {
 #define FLASH_DELAY 4
 
 int first_time = 0;
-uint32_t flash_delay             = 0;
-uint32_t flash_delay_day         = 0;
-uint32_t flash_delay_left        = 0;
-uint32_t flash_delay_left_stop   = 0;
-uint32_t flash_delay_right       = 0;
-uint32_t flash_delay_right_stop  = 0;
-uint32_t flash_delay_night       = 0;
-uint32_t flash_delay_stop        = 0;
-uint32_t flash_delay_hazards     = 0;
+int32_t flash_delay             = 0;
+int32_t flash_delay_day         = 0;
+int32_t flash_delay_left        = 0;
+int32_t flash_delay_left_stop   = 0;
+int32_t flash_delay_right       = 0;
+int32_t flash_delay_right_stop  = 0;
+int32_t flash_delay_night       = 0;
+int32_t flash_delay_stop        = 0;
+int32_t flash_delay_hazards     = 0;
 
 #define THEATERS 4 // hard code this for now, build an array funcitons later 
 
@@ -309,6 +308,9 @@ void loop() {
     theater_latch = 0;
   }
 
+  // if (flash_delay_right_stop < 0) flash_delay_right_stop = 0 ;
+  // if (flash_delay_left_stop < 0 ) flash_delay_left_stop = 0; 
+  
   if ((analogRead(LEFT_PIN) > READ_LIMIT  && analogRead(RIGHT_PIN) > READ_LIMIT ) ||   flash_delay_hazards  != 0) {
     first_time = 0;
 
@@ -324,10 +326,7 @@ void loop() {
   }
   if ((analogRead(LEFT_PIN) > READ_LIMIT  && analogRead(STOP_PIN) > READ_LIMIT ) ||   flash_delay_left_stop  != 0) {
     first_time = 0;
-
-
     if (flash_delay_left_stop == 0)  oledDisplay((char *) "LEFT + STOP");
-
     if (analogRead(STOP_PIN) > READ_LIMIT )
       flash_delay_left_stop = FLASH_DELAY;
     else
@@ -339,7 +338,7 @@ void loop() {
   }
 
 
-  if ((analogRead(RIGHT_PIN) > READ_LIMIT && analogRead(STOP_PIN)) || flash_delay_right_stop != 0 )  {
+  if ((analogRead(RIGHT_PIN) > READ_LIMIT && analogRead(STOP_PIN) > READ_LIMIT ) || flash_delay_right_stop != 0 )  {
     first_time = 0;
     if (flash_delay_right_stop == 0) oledDisplay ((char *) "RIGHT + STOP");
     if (analogRead(STOP_PIN) > READ_LIMIT)
@@ -352,7 +351,7 @@ void loop() {
   }
   if (analogRead(LEFT_PIN) > READ_LIMIT  ||  flash_delay_left != 0) {
     first_time = 0;
-
+    flash_delay_left_stop = 0;  // protection racket
     if (flash_delay_left == 0) oledDisplay((char *) "LEFT");
     if (analogRead(LEFT_PIN) > READ_LIMIT)
       flash_delay_left = FLASH_DELAY;
@@ -367,6 +366,7 @@ void loop() {
 
   if (analogRead(RIGHT_PIN) > READ_LIMIT || flash_delay_right != 0 )  {
     first_time = 0;
+    flash_delay_right_stop = 0;  // protection racket
     if (flash_delay_right == 0) oledDisplay ((char *) "RIGHT");
 
     if (analogRead(RIGHT_PIN) > READ_LIMIT)
@@ -759,4 +759,3 @@ void clearDelays()
   flash_delay_hazards     = 0;
   return ;
 }
-
